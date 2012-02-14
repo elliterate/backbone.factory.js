@@ -30,12 +30,24 @@ Backbone.Factory = (function() {
       return callback ? callback(count) : count;
     };
 
+    function hasParent() {
+      return !!options.parent;
+    }
+
+    function getParent() {
+      return factories[options.parent];
+    }
+
     self.options = function() {
-      if (options.parent) {
-        return _(factories[options.parent].options()).extend(options);
-      } else {
-        return _(options).clone();
+      var opts;
+
+      opts = _(options).clone();
+
+      if (hasParent()) {
+        _(opts).defaults(getParent().options());
       }
+
+      return opts;
     };
 
     self.attributes = function(overrides) {
@@ -43,8 +55,8 @@ Backbone.Factory = (function() {
 
       attributes = callback.call(builder);
 
-      if (options.parent) {
-        attributes = factories[options.parent].attributes(attributes);
+      if (hasParent()) {
+        attributes = getParent().attributes(attributes);
       }
 
       return _(attributes).extend(overrides);
