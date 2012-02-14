@@ -1,10 +1,23 @@
 Backbone.Factory = (function() {
-  var Factory, factories, sequences;
+  var Factory, Sequence, factories, sequences;
 
   function initialize() {
     factories = {};
     sequences = {};
   }
+
+  Sequence = function(callback) {
+    var self = {},
+      count = 0;
+
+    self.next = function() {
+      count += 1;
+
+      return callback ? callback(count) : count;
+    };
+
+    return self;
+  };
 
   Factory = function(options, callback) {
     var self = {},
@@ -70,19 +83,14 @@ Backbone.Factory = (function() {
     return factory.create(overrides);
   };
 
-  Factory.sequence = function(name, sequence) {
-    sequences[name] = {
-      count: 0,
-      callback: sequence
-    };
+  Factory.sequence = function(name, callback) {
+    sequences[name] = new Sequence(callback);
   };
 
   Factory.next = function(name) {
     var sequence = sequences[name];
 
-    sequence.count += 1;
-
-    return sequence.callback ? sequence.callback(sequence.count) : sequence.count;
+    return sequence.next();
   };
 
   Factory.reset = function() {
